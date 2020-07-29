@@ -83,6 +83,7 @@ HuffmanCodecUInt32_T.h
 哈夫曼编码树泛型，最长可以构造32bit的变长编码表，被编码数据要求能存储于栈中且为POD格式。被编码数据的类型不限，需要有可用的小于运算符。
 
 ```
+template<typename T>
 class HuffmanTree{
 	// 使用大根堆构建哈夫曼编码
 	// @param codes: 编码序列
@@ -103,13 +104,14 @@ class HuffmanTree{
 	// @return: 返回 HuffmanCodec 类，包含原始码和HuffmanCode码信息，
 	//			使用 hasCodec() 调用检查是否查找到了有效的哈夫曼编码
 	HuffmanCodec<T> find(T srcCode) const;
-  
-	// 从原始码编码至哈夫曼编码的编码结果
-	// getSourceCode() 获取原始码
-	// getHuffmanCode() 获取哈夫曼编码
-	// getHuffmanCodeLen() 获取哈夫曼编码的bit长度
-	// 哈夫曼编码存储是右对齐的，高位置0，从最低位至 getHuffmanCodeLen() 位存储了有效的哈夫曼编码值
-	template<typename T>
-	class HuffmanCodec;
-}
+
+};
+
+// 从原始码编码至哈夫曼编码的编码结果
+// getSourceCode() 获取原始码
+// getHuffmanCode() 获取哈夫曼编码
+// getHuffmanCodeLen() 获取哈夫曼编码的bit长度
+// 哈夫曼编码存储是右对齐的，高位置0，从最低位至 getHuffmanCodeLen() 位存储了有效的哈夫曼编码值
+template<typename T>
+class HuffmanCodec;
 ```
