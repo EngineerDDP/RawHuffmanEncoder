@@ -15,7 +15,7 @@ static PyObject* CBCodec_Init(CBCodec* self, PyObject* pArgs, PyObject* kwds) {
 		return reinterpret_cast<PyObject*>(self);
 	}
 	else {
-		PyErr_SetString(PyExc_BaseException, "Memory allocation failed.");
+		PyErr_SetString(PyExc_TypeError, "Memory allocation failed.");
 		return NULL;
 	}
 }
