@@ -76,7 +76,7 @@ static PyObject* CBCodec_SetCodecWithValue(CBCodec* self, PyObject* pArgs) {
 		}
 
 		// 强转至 byte
-		char_code[i] = static_cast<char>(*tmp_int);
+		char_code[i] = static_cast<T_Code>(*tmp_int);
 	}
 
 	self->codec_instance = new CppByteCodec(char_code, float_val, len_code);
@@ -118,8 +118,8 @@ static PyObject* CBCodec_SetCodec(CBCodec* self, PyObject* pArgs) {
 			return res;
 		}
 
-		// 强转至 byte
-		char_code[i] = static_cast<char>(*tmp_int);
+		// 强转至 支持的格式
+		char_code[i] = static_cast<T_Code>(*tmp_int);
 	}
 
 	self->codec_instance = new CppByteCodec(char_code, len_code);
@@ -182,7 +182,7 @@ static PyObject* CBCodec_Encode(CBCodec* self, PyObject* pArgs) {
 			return res;
 		}
 		// 静态类型转换
-		source_code_buffer[i] = static_cast<char>(tmp_source);
+		source_code_buffer[i] = static_cast<T_Code>(tmp_source);
 	}
 
 	// 长度
@@ -210,6 +210,7 @@ static PyObject* CBCodec_Encode(CBCodec* self, PyObject* pArgs) {
 
 	delete[] byte_buffer;
 	delete[] source_code_buffer;
+	Py_DECREF(raw_source_code);
 
 	/*   ------------------ 内存释放 ------------------    */
 
@@ -236,8 +237,13 @@ static PyObject* CBCodec_Decode(CBCodec* self, PyObject* pArgs) {
 		return res;
 	}
 
+	/*   ------------------ 引用计数 ------------------    */
+
 	// 转换FAST Item
 	PyObject* raw_source_code = PySequence_Fast(list_of_source_code, "List of codes were required.");
+
+	/*   ------------------ 引用计数 ------------------    */
+
 	// 元素指针
 	PyObject* tmp_item;
 
@@ -296,7 +302,8 @@ static PyObject* CBCodec_Decode(CBCodec* self, PyObject* pArgs) {
 	// 写入托管空间
 	for (int i = 0; i < decode_len; ++i) {
 		// 构建托管对象
-		tmp_item = Py_BuildValue("i", static_cast<int>(byte_buffer[i]));
+		tmp_source = byte_buffer[i];
+		tmp_item = Py_BuildValue("i", tmp_source);
 		// 写入
 		PyList_SetItem(res, i, tmp_item);
 	}
@@ -306,6 +313,7 @@ static PyObject* CBCodec_Decode(CBCodec* self, PyObject* pArgs) {
 	// 释放堆内存
 	delete[] byte_buffer;
 	delete[] source_code_buffer;
+	Py_DECREF(raw_source_code);
 
 	/*   ------------------ 内存释放 ------------------    */
 
@@ -356,7 +364,7 @@ static PyTypeObject CBCodec_ClassInfo;
 //               定义初始化过程
 // ----------------------------------------
 
-PyMODINIT_FUNC PyInit_HuffmanCodec(void) {
+PyMODINIT_FUNC PyInit_huffman(void) {
 	PyObject* res = Py_None;
 
 	CBCodec_ClassInfo.tp_new = PyType_GenericNew;
@@ -385,7 +393,7 @@ PyMODINIT_FUNC PyInit_HuffmanCodec(void) {
 
 	Py_INCREF(&CBCodec_ClassInfo);
 
-	PyModule_AddObject(res, "cbcodec", reinterpret_cast<PyObject*>(&CBCodec_ClassInfo));
+	PyModule_AddObject(res, "codec", reinterpret_cast<PyObject*>(&CBCodec_ClassInfo));
 
 	return res;
 }

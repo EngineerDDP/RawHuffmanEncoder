@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "CodecUInt8_T.h"
 
 using std::overflow_error;
@@ -60,7 +59,7 @@ int CharCodex::decode(const char* source, int source_len, char* buffer, int buff
 		// 如果恰好可以写入一个以上的byte
 		while (hCodeBuffered <= 24 && bytes_read != source_len) {
 			// 偏移，写入
-			hCodeBuffer |= source[bytes_read] << (24 - hCodeBuffered);
+			hCodeBuffer |= static_cast<unsigned char>(source[bytes_read]) << (24 - hCodeBuffered);
 			hCodeBuffered += 8;
 			bytes_read++;
 		}
