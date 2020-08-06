@@ -1,6 +1,4 @@
-cc = g++
-
-huffman: HuffmanCodec.o HuffmanCodecUInt32_T.o CodecUInt8_T.o pch.o
+huffman.so: HuffmanCodec.o HuffmanCodecUInt32_T.o CodecUInt8_T.o pch.o
     cc -shared HuffmanCodec.o HuffmanCodecUInt32_T.o CodecUInt8_T.o pch.o -o huffman.so
 
     HuffmanCodec.o: HuffmanCodecUInt32_T.o CodecUInt8_T.o pch.o
