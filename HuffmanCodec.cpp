@@ -12,6 +12,10 @@ static const char* cbcodec_string_desc = "Huffman codec class.";
 static PyObject* CBCodec_Init(CBCodec* self, PyObject* pArgs, PyObject* kwds) {
 	if (self != nullptr) {
 		self->codec_instance = nullptr;
+		self->input_buffer = nullptr;
+		self->output_buffer = nullptr;
+		self->input_buffer_len = 0;
+		self->output_buffer_len = 0;
 		return reinterpret_cast<PyObject*>(self);
 	}
 	else {
@@ -24,6 +28,10 @@ static void CBCodec_Destruct(CBCodec* self) {
 	if (self->codec_instance) {
 		delete self->codec_instance;
 		self->codec_instance = nullptr;
+		delete self->input_buffer;
+		self->input_buffer = nullptr;
+		delete self->output_buffer;
+		self->output_buffer = nullptr;
 	}
 	Py_TYPE(self)->tp_free(reinterpret_cast<PyObject*>(self));
 }
@@ -80,9 +88,12 @@ static PyObject* CBCodec_SetCodecWithValue(CBCodec* self, PyObject* pArgs) {
 	}
 
 	self->codec_instance = new CppByteCodec(char_code, float_val, len_code);
+
 	delete[] char_code;
 	delete[] float_val;
 	delete tmp_int;
+	Py_DECREF(list_of_code);
+	Py_DECREF(list_of_value);
 
 	return res;
 }
@@ -123,8 +134,10 @@ static PyObject* CBCodec_SetCodec(CBCodec* self, PyObject* pArgs) {
 	}
 
 	self->codec_instance = new CppByteCodec(char_code, len_code);
+
 	delete[] char_code;
 	delete tmp_int;
+	Py_DECREF(list_of_code);
 
 	return res;
 }
@@ -164,10 +177,35 @@ static PyObject* CBCodec_Encode(CBCodec* self, PyObject* pArgs) {
 
 	/*   ------------------ 内存分配 ------------------    */
 
+	if (self->input_buffer_len < len_source) {
+		self->input_buffer_len = len_source << 1;
+		delete self->input_buffer;
+		self->input_buffer = nullptr;
+	}
+	if (self->input_buffer == nullptr) {
+		self->input_buffer = new char[self->input_buffer_len]{ 0 };
+	}
+	else {
+		for (int i = 0; i < self->input_buffer_len; ++i)
+			self->input_buffer[i] = 0;
+	}
+	if (self->output_buffer_len < len_target) {
+		self->output_buffer_len = len_target << 1;
+		delete self->output_buffer;
+		self->output_buffer = nullptr;
+	}
+	if (self->output_buffer == nullptr) {
+		self->output_buffer = new char[self->output_buffer_len]{ 0 };
+	}
+	else {
+		for (int i = 0; i < self->output_buffer_len; ++i)
+			self->output_buffer[i] = 0;
+	}
+
 	// 分配原始缓冲区
-	char* source_code_buffer = new char[len_source] {0};
+	char* source_code_buffer = self->input_buffer;
 	// 分配编码缓冲区
-	char* byte_buffer = new char[len_target] {0};
+	char* byte_buffer = self->output_buffer;
 
 	/*   ------------------ 内存分配 ------------------    */
 
@@ -208,8 +246,8 @@ static PyObject* CBCodec_Encode(CBCodec* self, PyObject* pArgs) {
 
 	/*   ------------------ 内存释放 ------------------    */
 
-	delete[] byte_buffer;
-	delete[] source_code_buffer;
+	//delete[] byte_buffer;
+	//delete[] source_code_buffer;
 	Py_DECREF(raw_source_code);
 
 	/*   ------------------ 内存释放 ------------------    */
@@ -257,10 +295,35 @@ static PyObject* CBCodec_Decode(CBCodec* self, PyObject* pArgs) {
 
 	/*   ------------------ 内存分配 ------------------    */
 
-	// 申请buffer内存
-	char* source_code_buffer = new char[len_source] {0};
-	// 申请转换空间
-	char* byte_buffer = new char[len_target] {0};
+	if (self->input_buffer_len < len_source) {
+		self->input_buffer_len = len_source << 1;
+		delete self->input_buffer;
+		self->input_buffer = nullptr;
+	}
+	if (self->input_buffer == nullptr) {
+		self->input_buffer = new char[self->input_buffer_len]{ 0 };
+	}
+	else {
+		for (int i = 0; i < self->input_buffer_len; ++i)
+			self->input_buffer[i] = 0;
+	}
+	if (self->output_buffer_len < len_target) {
+		self->output_buffer_len = len_target << 1;
+		delete self->output_buffer;
+		self->output_buffer = nullptr;
+	}
+	if (self->output_buffer == nullptr) {
+		self->output_buffer = new char[self->output_buffer_len]{ 0 };
+	}
+	else {
+		for (int i = 0; i < self->output_buffer_len; ++i)
+			self->output_buffer[i] = 0;
+	}
+
+	// 分配原始缓冲区
+	char* source_code_buffer = self->input_buffer;
+	// 分配编码缓冲区
+	char* byte_buffer = self->output_buffer;
 
 	/*   ------------------ 内存分配 ------------------    */
 
@@ -311,8 +374,8 @@ static PyObject* CBCodec_Decode(CBCodec* self, PyObject* pArgs) {
 	/*   ------------------ 内存释放 ------------------    */
 
 	// 释放堆内存
-	delete[] byte_buffer;
-	delete[] source_code_buffer;
+	//delete[] byte_buffer;
+	//delete[] source_code_buffer;
 	Py_DECREF(raw_source_code);
 
 	/*   ------------------ 内存释放 ------------------    */

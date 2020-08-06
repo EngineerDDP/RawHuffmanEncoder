@@ -6,9 +6,9 @@
 
 #ifndef PCH_H
 #define PCH_H
-
-// 添加要在此处预编译的标头
+#define PY_SSIZE_T_CLEAN
 #include <Python.h>
+// 添加要在此处预编译的标头
 #include <structmember.h>
 
 #include "CodecUInt8_T.h"
@@ -18,6 +18,10 @@ typedef CharCodex CppByteCodec;
 struct CBCodec {
 	PyObject_HEAD
 		CppByteCodec* codec_instance;
+	char* input_buffer;
+	int input_buffer_len;
+	char* output_buffer;
+	int output_buffer_len;
 };
 
 #endif //PCH_H
